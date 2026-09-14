@@ -1,0 +1,6 @@
+{
+  "name": "Abid Garments",
+  "description": "Abid Garments - Premium Men's Clothing & Fabric Store in Okara, Pakistan. Features background video animation with transparent canvas mode, intro video splash, WhatsApp ordering, admin customization, and dark mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
