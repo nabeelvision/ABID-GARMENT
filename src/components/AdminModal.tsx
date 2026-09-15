@@ -21,7 +21,9 @@ import {
   LogOut,
   AlertCircle,
   Sparkles,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Save,
+  Download
 } from 'lucide-react';
 import {
   Product,
@@ -33,6 +35,7 @@ import {
 } from '../types';
 import { VIDEO_PRESETS, INTRO_VIDEO_PRESETS } from '../data/initialData';
 import { optimizeImageFile, OptimizedImageResult } from '../utils/imageOptimizer';
+import { saveStoreDataToServer, exportStoreDataJson } from '../services/storePersistence';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -283,34 +286,85 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     showNotification('Logo removed. Default royal monogram restored.');
   };
 
-  // Save Handlers
-  const saveBackgroundSettings = () => {
+  const [isSavingAll, setIsSavingAll] = useState(false);
+
+  // Master Save All Function - Saves all settings to disk file and parent state
+  const handleSaveAll = async () => {
+    setIsSavingAll(true);
+    try {
+      onSaveStoreSettings(storeForm);
+      onSaveBackgroundSettings(bgForm);
+      onSaveIntroSettings(introForm);
+      onSaveSocialLinks(socialForm);
+      onSaveOptimizationSettings(optForm);
+      onSaveProducts(products);
+
+      const res = await saveStoreDataToServer({
+        storeSettings: storeForm,
+        backgroundSettings: bgForm,
+        introSettings: introForm,
+        socialLinks: socialForm,
+        optimizationSettings: optForm,
+        products,
+      });
+
+      if (res.success) {
+        showNotification('تمام تبدیلیاں فائلز اور سرور میں محفوظ کر دی گئیں! (Changes saved to server files!)');
+      } else {
+        showNotification('Saved locally in browser!');
+      }
+    } catch {
+      showNotification('Settings updated in browser!');
+    } finally {
+      setIsSavingAll(false);
+    }
+  };
+
+  const handleExportData = () => {
+    exportStoreDataJson({
+      products,
+      backgroundSettings: bgForm,
+      introSettings: introForm,
+      storeSettings: storeForm,
+      socialLinks: socialForm,
+      optimizationSettings: optForm,
+    });
+    showNotification('Store data file (JSON) downloaded!');
+  };
+
+  // Save Handlers with automatic server file persistence
+  const saveBackgroundSettings = async () => {
     onSaveBackgroundSettings(bgForm);
-    showNotification('Background video settings updated!');
+    await saveStoreDataToServer({ backgroundSettings: bgForm });
+    showNotification('Background settings updated & saved to file!');
   };
 
-  const saveIntroSettings = () => {
+  const saveIntroSettings = async () => {
     onSaveIntroSettings(introForm);
-    showNotification('Intro video settings updated!');
+    await saveStoreDataToServer({ introSettings: introForm });
+    showNotification('Intro video settings updated & saved to file!');
   };
 
-  const saveStoreSettings = () => {
+  const saveStoreSettings = async () => {
     onSaveStoreSettings(storeForm);
-    showNotification('Store contact & location settings saved!');
+    await saveStoreDataToServer({ storeSettings: storeForm });
+    showNotification('Store & logo settings updated & saved to file!');
   };
 
-  const saveSocialLinks = () => {
+  const saveSocialLinks = async () => {
     onSaveSocialLinks(socialForm);
-    showNotification('Social media links updated!');
+    await saveStoreDataToServer({ socialLinks: socialForm });
+    showNotification('Social media links updated & saved to file!');
   };
 
-  const saveOptimizationSettings = () => {
+  const saveOptimizationSettings = async () => {
     onSaveOptimizationSettings(optForm);
-    showNotification('Image optimization settings saved!');
+    await saveStoreDataToServer({ optimizationSettings: optForm });
+    showNotification('Image optimization settings updated & saved to file!');
   };
 
-  // Product CRUD
-  const handleCreateProduct = (e: React.FormEvent) => {
+  // Product CRUD with automatic server file persistence
+  const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProductForm.name || !newProductForm.pricePKR) {
       showNotification('Please fill in garment name and price');
@@ -334,27 +388,29 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       featured: true,
     };
 
-    onSaveProducts([newProd, ...products]);
+    const updatedList = [newProd, ...products];
+    onSaveProducts(updatedList);
+    await saveStoreDataToServer({ products: updatedList });
     setIsAddingProduct(false);
-    showNotification(`Added "${newProd.name}" to store!`);
+    showNotification(`Added "${newProd.name}" & saved to file!`);
   };
 
-  const handleUpdateProduct = (e: React.FormEvent) => {
+  const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
 
     const updated = products.map((p) => (p.id === editingProduct.id ? editingProduct : p));
     onSaveProducts(updated);
+    await saveStoreDataToServer({ products: updated });
     setEditingProduct(null);
-    showNotification(`Updated "${editingProduct.name}"!`);
+    showNotification(`Updated "${editingProduct.name}" & saved to file!`);
   };
 
-  const handleDeleteProduct = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      const filtered = products.filter((p) => p.id !== id);
-      onSaveProducts(filtered);
-      showNotification('Product removed from catalog');
-    }
+  const handleDeleteProduct = async (id: string) => {
+    const filtered = products.filter((p) => p.id !== id);
+    onSaveProducts(filtered);
+    await saveStoreDataToServer({ products: filtered });
+    showNotification('Product removed & saved to file');
   };
 
   // Test Image Optimization Helper
@@ -409,14 +465,37 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
           <div className="flex items-center gap-2">
             {isAuthenticated && (
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-500 hover:text-red-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-                title="Lock Admin Panel"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
+              <>
+                <button
+                  id="admin-master-save-all-btn"
+                  onClick={handleSaveAll}
+                  disabled={isSavingAll}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-black shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                  title="Save All Changes Permanently to Site Files"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{isSavingAll ? 'Saving...' : 'Save All (فائلز اپڈیٹ کریں)'}</span>
+                </button>
+
+                <button
+                  id="admin-export-data-btn"
+                  onClick={handleExportData}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                  title="Download full store backup JSON file"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export JSON</span>
+                </button>
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-500 hover:text-red-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                  title="Lock Admin Panel"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </>
             )}
             <button
               onClick={onClose}

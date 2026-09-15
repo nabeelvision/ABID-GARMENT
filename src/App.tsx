@@ -16,6 +16,12 @@ import {
   initialSocialLinks,
   initialOptimizationSettings
 } from './data/initialData';
+import {
+  safeLocalLoad,
+  safeLocalSave,
+  fetchStoreDataFromServer,
+  saveStoreDataToServer
+} from './services/storePersistence';
 import { Navbar } from './components/Navbar';
 import { BackgroundVideo } from './components/BackgroundVideo';
 import { IntroVideoModal } from './components/IntroVideoModal';
@@ -42,41 +48,80 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // 1. Persistent State with LocalStorage
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('abid_garments_products');
-    return saved ? JSON.parse(saved) : initialProducts;
-  });
+  // 1. Persistent State with Safe LocalStorage (fallback to initialData)
+  const [products, setProducts] = useState<Product[]>(() =>
+    safeLocalLoad('abid_garments_products', initialProducts)
+  );
 
-  const [backgroundSettings, setBackgroundSettings] = useState<BackgroundVideoSettings>(() => {
-    const saved = localStorage.getItem('abid_garments_bg_video');
-    return saved ? JSON.parse(saved) : initialBackgroundVideoSettings;
-  });
+  const [backgroundSettings, setBackgroundSettings] = useState<BackgroundVideoSettings>(() =>
+    safeLocalLoad('abid_garments_bg_video', initialBackgroundVideoSettings)
+  );
 
-  const [introSettings, setIntroSettings] = useState<IntroVideoSettings>(() => {
-    const saved = localStorage.getItem('abid_garments_intro_video');
-    return saved ? JSON.parse(saved) : initialIntroVideoSettings;
-  });
+  const [introSettings, setIntroSettings] = useState<IntroVideoSettings>(() =>
+    safeLocalLoad('abid_garments_intro_video', initialIntroVideoSettings)
+  );
 
-  const [storeSettings, setStoreSettings] = useState<StoreSettings>(() => {
-    const saved = localStorage.getItem('abid_garments_store_info');
-    return saved ? JSON.parse(saved) : initialStoreSettings;
-  });
+  const [storeSettings, setStoreSettings] = useState<StoreSettings>(() =>
+    safeLocalLoad('abid_garments_store_info', initialStoreSettings)
+  );
 
-  const [socialLinks, setSocialLinks] = useState<SocialLinks>(() => {
-    const saved = localStorage.getItem('abid_garments_social_links');
-    return saved ? JSON.parse(saved) : initialSocialLinks;
-  });
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>(() =>
+    safeLocalLoad('abid_garments_social_links', initialSocialLinks)
+  );
 
-  const [optimizationSettings, setOptimizationSettings] = useState<OptimizationSettings>(() => {
-    const saved = localStorage.getItem('abid_garments_opt_settings');
-    return saved ? JSON.parse(saved) : initialOptimizationSettings;
-  });
+  const [optimizationSettings, setOptimizationSettings] = useState<OptimizationSettings>(() =>
+    safeLocalLoad('abid_garments_opt_settings', initialOptimizationSettings)
+  );
 
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('abid_garments_cart');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cartItems, setCartItems] = useState<CartItem[]>(() =>
+    safeLocalLoad('abid_garments_cart', [])
+  );
+
+  // Hydrate from Server File (/data/store-data.json) on Mount
+  useEffect(() => {
+    fetchStoreDataFromServer().then((serverData) => {
+      if (!serverData) return;
+      if (serverData.products && Array.isArray(serverData.products) && serverData.products.length > 0) {
+        setProducts(serverData.products);
+        safeLocalSave('abid_garments_products', serverData.products);
+      }
+      if (serverData.storeSettings) {
+        setStoreSettings((prev) => {
+          const merged = { ...prev, ...serverData.storeSettings };
+          safeLocalSave('abid_garments_store_info', merged);
+          return merged;
+        });
+      }
+      if (serverData.backgroundSettings) {
+        setBackgroundSettings((prev) => {
+          const merged = { ...prev, ...serverData.backgroundSettings };
+          safeLocalSave('abid_garments_bg_video', merged);
+          return merged;
+        });
+      }
+      if (serverData.introSettings) {
+        setIntroSettings((prev) => {
+          const merged = { ...prev, ...serverData.introSettings };
+          safeLocalSave('abid_garments_intro_video', merged);
+          return merged;
+        });
+      }
+      if (serverData.socialLinks) {
+        setSocialLinks((prev) => {
+          const merged = { ...prev, ...serverData.socialLinks };
+          safeLocalSave('abid_garments_social_links', merged);
+          return merged;
+        });
+      }
+      if (serverData.optimizationSettings) {
+        setOptimizationSettings((prev) => {
+          const merged = { ...prev, ...serverData.optimizationSettings };
+          safeLocalSave('abid_garments_opt_settings', merged);
+          return merged;
+        });
+      }
+    });
+  }, []);
 
   // Dark mode state
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -102,33 +147,33 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
 
-  // Sync to LocalStorage
+  // Sync to LocalStorage & Server
   useEffect(() => {
-    localStorage.setItem('abid_garments_products', JSON.stringify(products));
+    safeLocalSave('abid_garments_products', products);
   }, [products]);
 
   useEffect(() => {
-    localStorage.setItem('abid_garments_bg_video', JSON.stringify(backgroundSettings));
+    safeLocalSave('abid_garments_bg_video', backgroundSettings);
   }, [backgroundSettings]);
 
   useEffect(() => {
-    localStorage.setItem('abid_garments_intro_video', JSON.stringify(introSettings));
+    safeLocalSave('abid_garments_intro_video', introSettings);
   }, [introSettings]);
 
   useEffect(() => {
-    localStorage.setItem('abid_garments_store_info', JSON.stringify(storeSettings));
+    safeLocalSave('abid_garments_store_info', storeSettings);
   }, [storeSettings]);
 
   useEffect(() => {
-    localStorage.setItem('abid_garments_social_links', JSON.stringify(socialLinks));
+    safeLocalSave('abid_garments_social_links', socialLinks);
   }, [socialLinks]);
 
   useEffect(() => {
-    localStorage.setItem('abid_garments_opt_settings', JSON.stringify(optimizationSettings));
+    safeLocalSave('abid_garments_opt_settings', optimizationSettings);
   }, [optimizationSettings]);
 
   useEffect(() => {
-    localStorage.setItem('abid_garments_cart', JSON.stringify(cartItems));
+    safeLocalSave('abid_garments_cart', cartItems);
   }, [cartItems]);
 
   useEffect(() => {
