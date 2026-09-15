@@ -61,7 +61,7 @@ export const IntroVideoModal: React.FC<IntroVideoModalProps> = ({
       {/* Background Video */}
       <video
         ref={videoRef}
-        src={settings.videoUrl}
+        src="https://res.cloudinary.com/vktnybku/video/upload/v1789476026/PixVerse_V6_Image_Text_720P_1.mp4"
         autoPlay
         playsInline
         muted={isMuted}
