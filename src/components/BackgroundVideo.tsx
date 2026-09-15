@@ -16,7 +16,7 @@ export const BackgroundVideo: React.FC<BackgroundVideoProps> = ({
   const isVideoMode = settings.mode === 'video' && settings.enabled;
 
   const videoUrl =
-    'https://res.cloudinary.com/vktnybku/image/upload/v1789475212/aa.png';
+    'https://res.cloudinary.com/vktnybku/video/upload/v1789476285/ai-generations_minimax-h3_9b9fad85-d318-496d-81a1-15924201a628-9sqUmP.mp4';
 
   useEffect(() => {
     if (videoRef.current) {
