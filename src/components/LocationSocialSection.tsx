@@ -166,7 +166,7 @@ export const LocationSocialSection: React.FC<LocationSocialSectionProps> = ({
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                   {socialLinks.facebook && (
                     <a
-                      href={socialLinks.facebook}
+                      href="https://www.facebook.com/profile.php?id=100064234144221"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:border-blue-500 hover:text-blue-500 text-xs font-medium transition-all"
@@ -176,7 +176,7 @@ export const LocationSocialSection: React.FC<LocationSocialSectionProps> = ({
                   )}
                   {socialLinks.instagram && (
                     <a
-                      href={socialLinks.instagram}
+                      href="https://www.instagram.com/abidgarmentsofficial"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:border-pink-500 hover:text-pink-500 text-xs font-medium transition-all"
