@@ -52,8 +52,8 @@ export const initialStoreSettings: StoreSettings = {
 
 export const initialSocialLinks: SocialLinks = {
   whatsapp: '03217828917',
-  facebook: 'https://facebook.com/AbidGarmentsOkara',
-  instagram: 'https://instagram.com/abidgarments_okara',
+  facebook: 'https://www.facebook.com/profile.php?id=100064234144221',
+  instagram: 'https://www.instagram.com/abidgarmentsofficial',
   tiktok: 'https://tiktok.com/@abidgarmentsokara',
   youtube: 'https://youtube.com/@abidgarments',
 };
@@ -62,9 +62,9 @@ export const initialBackgroundVideoSettings: BackgroundVideoSettings = {
   mode: 'video', // Supports both 'default' and 'video'
   enabled: true,
   defaultPattern: 'luxury-mesh',
-  videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-golden-silk-fabric-waving-in-the-wind-41940-large.mp4',
-  isUploaded: false,
-  videoTitle: 'Golden Silk Fluid Weave',
+  videoUrl: 'https://res.cloudinary.com/vktnybku/video/upload/v1789476285/ai-generations_minimax-h3_9b9fad85-d318-496d-81a1-15924201a628-9sqUmP.mp4',
+  isUploaded: true,
+  videoTitle: 'Abid Garments Luxury AI Motion',
   makeBackgroundInvisible: true, // User requested: "jb background video animation upload hu tu website ka home page background bilkul invisible hu jana chaiyeah takky animation video 100% clearly visible hu"
   opacity: 0.95,
   playbackSpeed: 1,
@@ -75,8 +75,8 @@ export const initialBackgroundVideoSettings: BackgroundVideoSettings = {
 
 export const initialIntroVideoSettings: IntroVideoSettings = {
   enabled: true,
-  videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-golden-silk-fabric-waving-in-the-wind-41940-large.mp4',
-  isUploaded: false,
+  videoUrl: 'https://res.cloudinary.com/vktnybku/video/upload/v1789476026/PixVerse_V6_Image_Text_720P_1.mp4',
+  isUploaded: true,
   videoTitle: 'Abid Garments Grand Intro',
   autoCloseSeconds: 6,
   allowSkip: true,

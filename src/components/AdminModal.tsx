@@ -112,6 +112,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   // Optimizer test state
   const [testImageResult, setTestImageResult] = useState<OptimizedImageResult | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isSavingAll, setIsSavingAll] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
 
   const showNotification = (msg: string) => {
@@ -119,7 +120,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Sync forms when props change (MUST BE BEFORE any conditional return)
+  // Sync forms when props change
   useEffect(() => {
     setStoreForm(storeSettings);
   }, [storeSettings]);
@@ -139,8 +140,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   useEffect(() => {
     setOptForm(optimizationSettings);
   }, [optimizationSettings]);
-
-  if (!isOpen) return null;
 
   // Password verification: BsAi0035% (no hint allowed)
   const handleLogin = (e: React.FormEvent) => {
@@ -285,8 +284,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     setStoreForm((prev) => ({ ...prev, logoUrl: '' }));
     showNotification('Logo removed. Default royal monogram restored.');
   };
-
-  const [isSavingAll, setIsSavingAll] = useState(false);
 
   // Master Save All Function - Saves all settings to disk file and parent state
   const handleSaveAll = async () => {
@@ -435,6 +432,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       setIsOptimizing(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div id="admin-management-modal" className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
